@@ -88,6 +88,9 @@
     <Filter Include="Source Files\Engine\AssetPipeline">
       <UniqueIdentifier>{c3f979c8-01b2-481e-8034-d91e83badbb4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Engine\Debug">
+      <UniqueIdentifier>{22713e98-9ef8-406c-b282-dd014fa451a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -209,6 +212,9 @@
     </ClInclude>
     <ClInclude Include="Utility.h">
       <Filter>Header Files\Engine\CoreSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugStream.h">
+      <Filter>Header Files\Engine\Debug</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

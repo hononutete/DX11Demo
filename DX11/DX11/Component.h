@@ -18,7 +18,7 @@ public:
 	Component(Component& rother);
 
 	//デストラクタ
-	~Component();
+	virtual ~Component();
 
 	//コンポーネントのフレーム処理
 	void Update();

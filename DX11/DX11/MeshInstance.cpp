@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "MeshInstance.h"
-#include "Scene.h"
+//#include "Scene.h"
 #include "Camera.h"
 #include "ShaderCompiler.h"
-
+#include "GameWorld.h"
 
 MeshInstance::MeshInstance()
 {
@@ -18,9 +18,9 @@ MeshInstance::~MeshInstance()
 HRESULT MeshInstance::Render() {
 	HRESULT hr = E_FAIL;
 	extern D3D11User* g_pD3D11User;
-	extern Scene* g_pScene;
+	//extern Scene* g_pScene;
 	UINT DrawMeshIndex = 0;
-
+	extern GameWorld* g_pGameWorld;
 	////メッシュがなかった場合レンダリングは実行されない
 	//if (!IsRenderable()) {
 	//	return S_OK;
@@ -67,12 +67,12 @@ HRESULT MeshInstance::Render() {
 
 	//射影変換行列 , fovY, aspect, Zn, Zf
 	{
-		matProj = g_pScene->m_pCameraComponent->LoadProjectionMatrix();
+		matProj = g_pGameWorld->m_pCameraComponent->LoadProjectionMatrix();
 	}
 
 	//ビュー変換行列
 	{
-		matView = g_pScene->m_pCameraComponent->LoadViewMatrix();
+		matView = g_pGameWorld->m_pCameraComponent->LoadViewMatrix();
 	}
 
 	//ワールド変換行列
@@ -89,10 +89,10 @@ HRESULT MeshInstance::Render() {
 		matIdentity = XMMatrixIdentity();
 
 		//スケール変換
-		matScale = XMMatrixScaling(m_pTransform->scaleX, m_pTransform->scaleY, m_pTransform->scaleZ);
+		matScale = XMMatrixScaling(m_pTransform->scale.x, m_pTransform->scale.y, m_pTransform->scale.z);
 
 		//平行移動
-		matTrans = XMMatrixTranslation(m_pTransform->transX, m_pTransform->transY, m_pTransform->transZ);
+		matTrans = XMMatrixTranslation(m_pTransform->localPosition.x, m_pTransform->localPosition.y, m_pTransform->localPosition.z);
 
 		//回転
 		matRotX = XMMatrixRotationX(XMConvertToRadians(m_pTransform->eulerAngles.x));
@@ -126,19 +126,19 @@ HRESULT MeshInstance::Render() {
 									   //②UpdateSubresourceを使う方法
 									   //常にこれを使おうとするとこのエラーがでる→Can only invoke UpdateSubresource when the destination Resource was created with D3D11_USAGE_DEFAULT and is not a multisampled Resource.
 									   //定数バッファ構造体に値を設定
-	extern Scene* g_pScene;
+	//extern Scene* g_pScene;
 
 	Shader::CB_LAMBERT cb;
 	cb.matWVP = matWVP;
 	cb.matNormal = matNormal;
 	//TODO: ライトベクトルは正規化してから設定するがこれは、すべてのゲームオブジェクトですることではない
 	XMVECTOR mLight = XMVectorZero();
-	mLight = XMLoadFloat4(&(g_pScene->m_vecLight));
+	mLight = XMLoadFloat4(&(g_pGameWorld->m_vecLight));
 	mLight = XMVector4Normalize(mLight);
 	XMFLOAT4 light;
 	XMStoreFloat4(&light, mLight);
 	cb.vecLight = light;
-	cb.ambient = g_pScene->m_Ambient;
+	cb.ambient = g_pGameWorld->m_Ambient;
 
 	//定数バッファ構造体の情報をVRAM上に転送
 	g_pD3D11User->m_D3DDeviceContext->UpdateSubresource(m_pMaterial->m_pConstantBuffersLambert, 0, NULL, &cb, 0, 0);

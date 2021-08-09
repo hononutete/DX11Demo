@@ -16,6 +16,22 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+//#include <iostream>
+//#include "DebugStream.h"
 
+
+//#define	TRACE(_format_, ...)					\
+//		{						\
+//			char temp[MAX_PATH];			\
+//			sprintf(temp, _format_, __VA_ARGS__);	\
+//			OutputDebugString(temp);		\
+//		}
+
+#   define MyOutputDebugString( str, ... ) \
+      { \
+        TCHAR c[256]; \
+        _stprintf_s( c, str, __VA_ARGS__ ); \
+        OutputDebugString( c ); \
+      }
 
 // TODO: reference additional headers your program requires here

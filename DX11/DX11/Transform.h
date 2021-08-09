@@ -8,19 +8,19 @@ public:
 	Transform* m_pParent;
 
 	//回転
-	float rotX = 0.0f;
-	float rotY = 0.0f;
-	float rotZ = 0.0f;
+	//float rotX = 0.0f;
+	//float rotY = 0.0f;
+	//float rotZ = 0.0f;
 
-	//位置
-	float transX = 0.0f;
-	float transY = 0.0f;
-	float transZ = 0.0f;
+	////位置
+	//float transX = 0.0f;
+	//float transY = 0.0f;
+	//float transZ = 0.0f;
 
-	//スケール
-	float scaleX = 5.0f;
-	float scaleY = 5.0f;
-	float scaleZ = 5.0f;
+	////スケール
+	//float scaleX = 5.0f;
+	//float scaleY = 5.0f;
+	//float scaleZ = 5.0f;
 
 	XMFLOAT4 eulerAngles   = XMFLOAT4(0.f, 0.f, 0.f, 0.f);
 	XMFLOAT4 localPosition = XMFLOAT4(0.f, 0.f, 0.f, 0.f);

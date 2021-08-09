@@ -1,6 +1,7 @@
 #pragma once
 #include "InputOperator.h"
-#include "GameObject.h"
+//#include "GameObject.h"
+class GameObject;
 
 class InputOperatorCamera : public InputOperator
 {
@@ -16,6 +17,8 @@ public:
 
 	InputOperatorCamera();
 	~InputOperatorCamera();
+
+	void SetCamera(GameObject* pCameraGameObject);
 
 	void Dispatch() override;
 };

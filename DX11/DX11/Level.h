@@ -2,8 +2,12 @@
 #include "GameObject.h"
 #include "FBXSDKMeshLoader.h"
 #include "InputOperatorCamera.h"
-#include "Level.h"
+//#include "Level.h"
 #include <vector>
+
+//前方宣言
+class Camera;
+class GameWorld;
 
 /*
 レベルは一つのワールドチャンクに相当するクラス
@@ -53,7 +57,7 @@ public:
 	//入力を処理するクラス
 	InputOperatorCamera* m_pInputOperatorCamera;
 
-	HRESULT LoadLevelSync();
+	HRESULT LoadLevelSync(GameWorld* pWorld);
 
 	HRESULT LoadLevelAsync();
 };

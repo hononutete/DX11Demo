@@ -6,10 +6,13 @@
 #include "Mesh.h"
 #include "ShaderCompiler.h"
 #include "Renderer.h"
+#include "Level.h"
+#include "GameObject.h"
+
 GameWorld::GameWorld()
 {
-	m_pBox = nullptr;
-	m_pPlane = nullptr;
+	//m_pBox = nullptr;
+	//m_pPlane = nullptr;
 	m_pCamera = nullptr;
 	m_pInputOperatorCamera = nullptr;
 }
@@ -17,8 +20,8 @@ GameWorld::GameWorld()
 
 GameWorld::~GameWorld()
 {
-	SAFE_DELETE(m_pBox);
-	SAFE_DELETE(m_pPlane);
+	//SAFE_DELETE(m_pBox);
+	//SAFE_DELETE(m_pPlane);
 	SAFE_DELETE(m_pCamera);
 	SAFE_DELETE(m_pInputOperatorCamera);
 }
@@ -30,66 +33,13 @@ HRESULT GameWorld::LoadLevel(UINT levelID)
 	extern FBXSDKMeshLoader* g_pMeshLoader;
 
 	//シリアライズされたレベルデータからゲームワールドにオブジェクトを配置
+	//TODO:現在は簡易的にハードコードされたクラスをロードする
+	Level* pLevel = new Level();
+	pLevel->LoadLevelSync(this);
 
-
-	//ゲームオブジェクトの作成
-
-	//ボックス
-	m_pBox = new GameObject();
-	m_pBox->Initialize();
-	{	
-		//マテリアルを作成
-		Material* pMaterial = new Material(_T("DefaultDiffse.hsls"));
-		
-		//レンダラーを作成
-		Renderer* pRenderer = new Renderer();
-		// レンダラーコンポーネントのメッシュグループに、メッシュをロードして設定
-		hr = g_pMeshLoader->LoadMeshData(_T("C:/Users/yuya/Desktop/GameProjects/DirectX11VS15/DX11/DX11/Resources/animatedBox.fbx"), &pRenderer->m_pMeshGroup);
-		//hr = g_pMeshLoader->LoadMeshData(_T("C:/Users/yuya/Desktop/GameProjects/DirectX11VS15/DX11/DX11/Resources/animatedBox.fbx"), &m_pBox->m_pMeshGroup);
-		if (FAILED(hr)) {
-			OutputDebugString(_T("ERROR : loading fbx failed...\n"));
-			goto EXIT;
-		}
-		//レンダラーにマテリアルを設定
-		pRenderer->SetMaterial(pMaterial);
-
-		//レンダラーのメッシュに一番最初のアニメーションをセット
-		pRenderer->m_pMeshGroup->Meshes[0].SetAnimation(0);
-		
-		
-		
-		
-		
-		
-		//デフォルトのマテリアルを作成
-		//m_pBox->CreateMaterial(*(_T("DefaultDiffse.hsls")));
-		
-		//一番最初のアニメーションをセット
-		//m_pBox->m_pMeshGroup->Meshes[0].SetAnimation(0);
-	}
-
-	//平面ポリゴン
-	//m_pPlane = new GameObject();
-	//m_pPlane->Initialize();
-	//{
-	//	//メッシュ作成
-	//	PlaneMeshFactory planeMeshFactory;
-	//	PlaneMeshFactory* lpPlaneMeshFactory = &planeMeshFactory;
-	//	hr = lpPlaneMeshFactory->CreateMesh(&m_pPlane->m_pMeshGroup);
-	//	if (FAILED(hr)) {
-	//		OutputDebugString(_T("ERROR : loading plane mesh failed...\n"));
-	//		goto EXIT;
-	//	}
-
-	//	//スケールを設定　TODO:本来はファクトリー内でやる
-	//	m_pPlane->m_pTransform->scaleX = 20.0f;
-	//	m_pPlane->m_pTransform->scaleY = 20.0f;
-	//	m_pPlane->m_pTransform->scaleZ = 20.0f;
-
-	//	//デフォルトのマテリアルを作成
-	//	m_pPlane->CreateMaterial(*(_T("DefaultDiffse")));
-	//}
-
+	//レベルのリストに格納
+	m_pLoadedLevelList.push_back(pLevel);
+	
 	//カメラの作成（GameObjectをベースにするのは、ゲームオブジェクトがもつTransformデータを使いたいから。カメラの位置、向きなど）
 	m_pCamera = new GameObject();
 	m_pCamera->Initialize();
@@ -128,9 +78,11 @@ HRESULT GameWorld::DestroyLevel(UINT levelID) {
 void GameWorld::UpdateGameWorld()
 {
 	//すべてのゲームオブジェクトに対して、フレーム処理を行う
-	m_pBox->Update();
-	//m_pPlane->Update();
 	m_pCamera->Update();
+	for (GameObject* pGameObject : m_pGameObjectList)
+	{
+		pGameObject->Update();
+	}
 
 	//入力処理を行う
 	m_pInputOperatorCamera->Dispatch();
@@ -151,12 +103,15 @@ HRESULT GameWorld::RenderGameWorld()
 		if (g_pD3D11User->m_DepthStencilView)
 			g_pD3D11User->m_D3DDeviceContext->ClearDepthStencilView(g_pD3D11User->m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
-
+	
 	//ゲームオブジェクトをバックバッファに描画
 	{
 		//本来であればレンダリングの順番を考慮しなければならないが今は固定
-		//m_pPlane->Render();
-		m_pBox->Render();
+		//全てのゲームオブジェクトのレンダリング
+		for (GameObject* pGameObject : m_pGameObjectList) 
+		{
+			pGameObject->Render();
+		}
 	}
 
 	//スワップチェーンによってバックバッファの内容をフロントバッファに反映（ディスプレイに表示）
@@ -164,4 +119,10 @@ HRESULT GameWorld::RenderGameWorld()
 	hr = S_OK;
 
 	return hr;
+}
+
+HRESULT GameWorld::AddGameObjectToWolrd(GameObject* pGameObject)
+{
+	m_pGameObjectList.push_back(pGameObject);
+	return S_OK;
 }

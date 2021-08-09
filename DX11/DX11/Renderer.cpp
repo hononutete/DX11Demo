@@ -10,6 +10,7 @@
 #include "Level.h"
 #include "Camera.h"
 #include "Utility.h"
+#include "GameWorld.h"
 
 Renderer::Renderer()
 {
@@ -39,17 +40,21 @@ HRESULT Renderer::SetMaterial(Material* pMaterial)
 //バッチングのため、この段階ではレンダリングキューに登録だけを行う
 //レンダリング手法（Fowardレンダリングか、Defferedレンダリングかにもよって、ここはかわってくるだろう）
 
-HRESULT Renderer::Update()
+HRESULT Renderer::Render()
 {
 	HRESULT hr = E_FAIL;
 	extern D3D11User* g_pD3D11User;
-	extern Level* g_pScene;
+	//extern Level* g_pScene;
+	extern GameWorld* g_pGameWorld;
 	UINT DrawMeshIndex = 0;
 
 	////メッシュがなかった場合レンダリングは実行されない
 	//if (!IsRenderable()) {
 	//	return S_OK;
 	//}
+
+	if(m_pMeshGroup == nullptr)
+		OutputDebugString(_T("m_pMeshGroup is null\n"));
 
 	//*** モデルのアニメーションを更新 ***
 	if (m_pMeshGroup->Meshes[0].HasAnimation())
@@ -92,12 +97,12 @@ HRESULT Renderer::Update()
 
 	//射影変換行列 , fovY, aspect, Zn, Zf
 	{
-		matProj = g_pScene->m_pCameraComponent->LoadProjectionMatrix();
+		matProj = g_pGameWorld->m_pCameraComponent->LoadProjectionMatrix();
 	}
 
 	//ビュー変換行列
 	{
-		matView = g_pScene->m_pCameraComponent->LoadViewMatrix();
+		matView = g_pGameWorld->m_pCameraComponent->LoadViewMatrix();
 	}
 
 	//ワールド変換行列
@@ -114,15 +119,15 @@ HRESULT Renderer::Update()
 		matIdentity = XMMatrixIdentity();
 
 		//スケール変換
-		matScale = XMMatrixScaling(m_pTransform->scaleX, m_pTransform->scaleY, m_pTransform->scaleZ);
+		matScale = XMMatrixScaling(m_pGameObject->m_pTransform->scale.x, m_pGameObject->m_pTransform->scale.y, m_pGameObject->m_pTransform->scale.z);
 
 		//平行移動
-		matTrans = XMMatrixTranslation(m_pTransform->transX, m_pTransform->transY, m_pTransform->transZ);
+		matTrans = XMMatrixTranslation(m_pGameObject->m_pTransform->localPosition.x, m_pGameObject->m_pTransform->localPosition.y, m_pGameObject->m_pTransform->localPosition.z);
 
 		//回転
-		matRotX = XMMatrixRotationX(XMConvertToRadians(m_pTransform->eulerAngles.x));
-		matRotY = XMMatrixRotationY(XMConvertToRadians(m_pTransform->eulerAngles.y));
-		matRotZ = XMMatrixRotationZ(XMConvertToRadians(m_pTransform->eulerAngles.z));
+		matRotX = XMMatrixRotationX(XMConvertToRadians(m_pGameObject->m_pTransform->eulerAngles.x));
+		matRotY = XMMatrixRotationY(XMConvertToRadians(m_pGameObject->m_pTransform->eulerAngles.y));
+		matRotZ = XMMatrixRotationZ(XMConvertToRadians(m_pGameObject->m_pTransform->eulerAngles.z));
 		//matRotX = XMMatrixRotationX(XMConvertToRadians(m_pTransform->rotX));
 		//matRotY = XMMatrixRotationY(XMConvertToRadians(m_pTransform->rotY));
 		//matRotZ = XMMatrixRotationZ(XMConvertToRadians(m_pTransform->rotZ));
@@ -151,19 +156,19 @@ HRESULT Renderer::Update()
 									   //②UpdateSubresourceを使う方法
 									   //常にこれを使おうとするとこのエラーがでる→Can only invoke UpdateSubresource when the destination Resource was created with D3D11_USAGE_DEFAULT and is not a multisampled Resource.
 									   //定数バッファ構造体に値を設定
-	extern Level* g_pScene;
+	//extern Level* g_pScene;
 
 	Shader::CB_LAMBERT cb;
 	cb.matWVP = matWVP;
 	cb.matNormal = matNormal;
 	//TODO: ライトベクトルは正規化してから設定するがこれは、すべてのゲームオブジェクトですることではない
 	XMVECTOR mLight = XMVectorZero();
-	mLight = XMLoadFloat4(&(g_pScene->m_vecLight));
+	mLight = XMLoadFloat4(&(g_pGameWorld->m_vecLight));
 	mLight = XMVector4Normalize(mLight);
 	XMFLOAT4 light;
 	XMStoreFloat4(&light, mLight);
 	cb.vecLight = light;
-	cb.ambient = g_pScene->m_Ambient;
+	cb.ambient = g_pGameWorld->m_Ambient;
 
 	//定数バッファ構造体の情報をVRAM上に転送
 	g_pD3D11User->m_D3DDeviceContext->UpdateSubresource(m_pMaterial->m_pConstantBuffersLambert, 0, NULL, &cb, 0, 0);
@@ -261,4 +266,12 @@ EXIT:
 	return hr;
 
 
+}
+
+bool Renderer::IsRenderable() 
+{
+	if (m_pMeshGroup == nullptr || m_pMaterial == nullptr)
+		return false;
+	else
+		return true;
 }

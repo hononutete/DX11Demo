@@ -2,10 +2,12 @@
 #include "GameObject.h"
 #include "FBXSDKMeshLoader.h"
 #include "InputOperatorCamera.h"
-#include "Level.h"
+//#include "Level.h"
 #include <vector>
 //前方宣言
 class Camera;
+class GameObject;
+class Level;
 
 /*
 ゲームワールドのクラス
@@ -50,12 +52,12 @@ public:
 	float m_Ambient = 0.0f;
 
 	//ゲームオブジェクト
-	GameObject* m_pBox;
-	GameObject* m_pPlane;
+	//GameObject* m_pBox;
+	//GameObject* m_pPlane;
 	GameObject* m_pCamera;
 
 	//ワールド内にロードされているレベルのポインタリスト
-	std::vector<GameObject*> m_pLoadedLevelList;
+	std::vector<Level*> m_pLoadedLevelList;
 
 	//ワールド内のすべてのゲームオブジェクトのポインタリスト
 	std::vector<GameObject*> m_pGameObjectList;
@@ -81,5 +83,7 @@ public:
 
 	//シーンのレンダリング
 	HRESULT RenderGameWorld();
+
+	HRESULT AddGameObjectToWolrd(GameObject* pGameObject);
 };
 

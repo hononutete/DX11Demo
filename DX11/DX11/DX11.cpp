@@ -26,6 +26,8 @@ using namespace DirectX;
 
 TCHAR *AppName = _T("DX11");
 
+
+
 DWORD g_Width = 640, g_Height = 480;
 //DWORD g_Width = 900, g_Height = 450;
 
@@ -83,7 +85,7 @@ GameController* g_pGameController = NULL;
 
 
 //シーン
-Level* g_pScene = NULL;
+//Level* g_pScene = NULL;
 
 //ゲームワールド
 GameWorld* g_pGameWorld = NULL;
@@ -401,7 +403,7 @@ HRESULT InitScene()
 	//ゲームワールドインスタンスの作成
 	//シーンの作成
 	g_pGameWorld = new GameWorld();
-	hr = g_pGameWorld->LoadLevel();
+	hr = g_pGameWorld->LoadLevel(0);
 	if (FAILED(hr)) {
 		OutputDebugString(_T("ERROR : loading scene failed...\n"));
 		goto EXIT;
@@ -409,13 +411,13 @@ HRESULT InitScene()
 	hr = S_OK;
 
 	//シーンの作成
-	g_pScene = new Level();
-	hr = g_pScene->LoadLevelSync();
-	if (FAILED(hr)) {
-		OutputDebugString(_T("ERROR : loading scene failed...\n"));
-		goto EXIT;
-	}
-	hr = S_OK;	
+	//g_pScene = new Level();
+	//hr = g_pScene->LoadLevelSync();
+	//if (FAILED(hr)) {
+	//	OutputDebugString(_T("ERROR : loading scene failed...\n"));
+	//	goto EXIT;
+	//}
+	//hr = S_OK;	
 
 EXIT:
 	return hr;
@@ -462,7 +464,7 @@ HRESULT GameLoop()
 }
 
 HRESULT Destroy() {
-
+	return S_OK;
 }
 
 
